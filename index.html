@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Analyzer</title>
+    <style>
+        .token-box {
+            display: inline-block;
+            width: 50px;
+            height: 20px;
+            background-color: #ccc;
+            margin: 10px;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 20px;
+            color: black;
+        }
+        
+        .token-box-green {
+            background-color: #C6F4D6;
+        }
+        
+        .token-box-red {
+            background-color: #FFC7CE;
+        }
+        
+        .related-concept {
+            display: inline-block;
+            margin-left: 10px;
+            color: black;
+            text-decoration: underline;
+        }
+        
+        .token-hover-effect {
+            position: relative;
+        }
+        
+        .token-hover-effect span {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 12px;
+            color: #fff;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Token Analyzer</h1>
+
+    <p id="token-explaination">What are tokens?</p>
+    <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
+
+    <input type="text" id="input-text" placeholder="Enter your text here...">
+    <button id="analyze-btn">Analyze</button>
+    <div id="token-display"></div>
+
+    <script>
+        // Get the input text and analyze button elements
+        const inputText = document.getElementById('input-text');
+        const analyzeBtn = document.getElementById('analyze-btn');
+
+        // Function to count tokens in a string
+        function countTokens(text) {
+            let tokenCount = 0;
+            const regex = /\s+|[^a-zA-Z]/g;
+            return text.split(regex).length - 1;
+        }
+
+        // Function to analyze input text and display estimated tokens
+        function analyzeText() {
+            const inputTextValue = inputText.value.trim();
+            const estimatedTokens = countTokens(inputTextValue) * 4; // average 4 characters per token
+
+            document.getElementById('token-explaination').innerHTML = `
+                <p id="token-explaination">What are tokens?</p>
+                <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
+                <h2>Estimated Tokens:</h2>
+                <div id="estimated-token-count"></div>
+            `;
+
+            document.getElementById('estimated-token-count').innerHTML = `Approximately ${estimatedTokens} tokens.`;
+
+            // Display each estimated token in a colored box
+            const tokenDisplayDiv = document.getElementById('token-display');
+            tokenDisplayDiv.innerHTML = '';
+            inputTextValue.split(/\s+|[^a-zA-Z]/).forEach((token, index) => {
+                if (index === 0 || index === inputTextValue.length - 1) {
+                    // Display words and spaces as green boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#C6F4D6';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (['.', ',', '!', '?'].includes(token)) {
+                    // Display punctuation marks as red boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#FFC7CE';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (['!', '?', ';', ':'].includes(token)) {
+                    // Display special characters as red boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#FFC7CE';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (['"', "'"].includes(token)) {
+                    // Display quotes as green boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#C6F4D6';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (['!', '?', ';', ':'].includes(token)) {
+                    // Display special characters as red boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#FFC7CE';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (['"', "'"].includes(token)) {
+                    // Display quotes as green boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#C6F4D6';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                } else if (token.charCodeAt(0) >= 32 && token.charCodeAt(0) <= 126) {
+                    // Display other characters as green boxes
+                    const tokenBox = document.createElement('div');
+                    tokenBox.className = 'token-box';
+                    tokenBox.style.backgroundColor = '#C6F4D6';
+                    tokenBox.innerHTML = token;
+                    tokenDisplayDiv.appendChild(tokenBox);
+                }
+            });
+
+            // Add hover effects to show token relationships
+            const relatedConcepts = {
+                "dog": ["pet", "animal"],
+                "cat": ["pet", "animal"],
+                "horse": ["pet", "animal"]
+            };
+
+            tokenDisplayDiv.innerHTML += `
+                <script>
+                    document.querySelectorAll('.token-box').forEach(tokenBox => {
+                        tokenBox.addEventListener('mouseover', () => {
+                            const relatedConcepts = ${JSON.stringify(relatedConcepts)};
+                            let relatedConceptHtml = '';
+                            for (const concept in relatedConcepts) {
+                                if (concept.toLowerCase().includes(tokenBox.innerHTML.toLowerCase())) {
+                                    relatedConceptHtml += `<span class="related-concept">${concept}</span>`;
+                                }
+                            }
+                            tokenBox.innerHTML += relatedConceptHtml;
+                        });
+
+                        tokenBox.addEventListener('mouseout', () => {
+                            const relatedConcepts = ${JSON.stringify(relatedConcepts)};
+                            let relatedConceptHtml = '';
+                            for (const concept in relatedConcepts) {
+                                if (concept.toLowerCase().includes(tokenBox.innerHTML.toLowerCase())) {
+                                    relatedConceptHtml += `<span class="related-concept">${concept}</span>`;
+                                }
+                            }
+                            tokenBox.innerHTML = `${tokenBox.innerHTML}${relatedConceptHtml}`;
+                        });
+                    });
+                </script>
+            `;
+        }
+
+        // Add event listener to the analyze button
+        analyzeBtn.addEventListener('click', analyzeText);
+
+        // Initial text input and display
+        inputText.value = '';
+        document.getElementById('token-explaination').innerHTML = `
+            <p id="token-explaination">What are tokens?</p>
+            <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
+            <h2>Estimated Tokens:</h2>
+        `;
+
+        document.getElementById('estimated-token-count').innerHTML = '';
+    </script>
+
+</body>
+</html>
