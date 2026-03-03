@@ -3,192 +3,227 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Token Analyzer</title>
+    <title>TokenView | Professional Analyzer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Fira+Code:wght@400&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #38bdf8;
+            --secondary: #818cf8;
+            --text: #f1f5f9;
+            --green: #4ade80;
+            --pink: #fb7185;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top left, #1e293b, #0f172a);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-weight: 600;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .description {
+            color: #94a3b8;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 0 28px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(56, 189, 248, 0.4);
+        }
+
+        .stats {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #334155;
+        }
+
+        #token-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
         .token-box {
-            display: inline-block;
-            width: 50px;
-            height: 20px;
-            background-color: #ccc;
-            margin: 10px;
-            border-radius: 5px;
-            text-align: center;
-            line-height: 20px;
-            color: black;
-        }
-        
-        .token-box-green {
-            background-color: #C6F4D6;
-        }
-        
-        .token-box-red {
-            background-color: #FFC7CE;
-        }
-        
-        .related-concept {
-            display: inline-block;
-            margin-left: 10px;
-            color: black;
-            text-decoration: underline;
-        }
-        
-        .token-hover-effect {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            padding: 4px 10px;
+            border-radius: 6px;
+            color: #000;
+            cursor: default;
+            transition: transform 0.2s ease;
             position: relative;
         }
-        
-        .token-hover-effect span {
+
+        .token-box:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        /* Logic Styles */
+        .token-word { background-color: var(--green); }
+        .token-punct { background-color: var(--pink); }
+
+        .tooltip {
             position: absolute;
-            top: 50%;
+            bottom: 125%;
             left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 12px;
+            transform: translateX(-50%);
+            background: #000;
             color: #fff;
-            background-color: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 10px;
+            white-space: nowrap;
+            display: none;
+            pointer-events: none;
+        }
+
+        .token-box:hover .tooltip {
+            display: block;
         }
     </style>
 </head>
 <body>
 
+<div class="container">
     <h1>Token Analyzer</h1>
+    <p class="description">
+        Tokens are the atomic units of LLMs. In English, 1,000 tokens is roughly 750 words. 
+        Input your text below to see how a machine perceives your language.
+    </p>
 
-    <p id="token-explaination">What are tokens?</p>
-    <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
+    <div class="input-group">
+        <input type="text" id="input-text" placeholder="Type a sentence (try: The quick brown dog!)">
+        <button id="analyze-btn">Analyze</button>
+    </div>
 
-    <input type="text" id="input-text" placeholder="Enter your text here...">
-    <button id="analyze-btn">Analyze</button>
-    <div id="token-display"></div>
+    <div class="stats" id="stats-area" style="display: none;">
+        <h3 id="token-count-text">Estimated Tokens: 0</h3>
+        <div id="token-display"></div>
+    </div>
+</div>
 
-    <script>
-        // Get the input text and analyze button elements
-        const inputText = document.getElementById('input-text');
-        const analyzeBtn = document.getElementById('analyze-btn');
+<script>
+    const inputText = document.getElementById('input-text');
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const statsArea = document.getElementById('stats-area');
+    const tokenDisplay = document.getElementById('token-display');
+    const tokenCountText = document.getElementById('token-count-text');
 
-        // Function to count tokens in a string
-        function countTokens(text) {
-            let tokenCount = 0;
-            const regex = /\s+|[^a-zA-Z]/g;
-            return text.split(regex).length - 1;
-        }
+    // Related concepts mapping
+    const relationships = {
+        "dog": "Animal / Pet",
+        "cat": "Animal / Pet",
+        "horse": "Animal / Equine",
+        "hello": "Greeting",
+        "ai": "Artificial Intelligence"
+    };
 
-        // Function to analyze input text and display estimated tokens
-        function analyzeText() {
-            const inputTextValue = inputText.value.trim();
-            const estimatedTokens = countTokens(inputTextValue) * 4; // average 4 characters per token
+    function analyzeText() {
+        const text = inputText.value.trim();
+        if (!text) return;
 
-            document.getElementById('token-explaination').innerHTML = `
-                <p id="token-explaination">What are tokens?</p>
-                <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
-                <h2>Estimated Tokens:</h2>
-                <div id="estimated-token-count"></div>
-            `;
+        // Reset and Show
+        statsArea.style.display = 'block';
+        tokenDisplay.innerHTML = '';
 
-            document.getElementById('estimated-token-count').innerHTML = `Approximately ${estimatedTokens} tokens.`;
+        // Improved Regex: captures words or individual punctuation marks
+        const tokens = text.match(/\w+|[^\w\s]/g) || [];
+        
+        // In LLMs, tokens aren't always words (approx 4 chars/token)
+        // We'll show the actual count of fragments for visual clarity
+        tokenCountText.innerText = `Total Tokens: ${tokens.length}`;
 
-            // Display each estimated token in a colored box
-            const tokenDisplayDiv = document.getElementById('token-display');
-            tokenDisplayDiv.innerHTML = '';
-            inputTextValue.split(/\s+|[^a-zA-Z]/).forEach((token, index) => {
-                if (index === 0 || index === inputTextValue.length - 1) {
-                    // Display words and spaces as green boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#C6F4D6';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (['.', ',', '!', '?'].includes(token)) {
-                    // Display punctuation marks as red boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#FFC7CE';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (['!', '?', ';', ':'].includes(token)) {
-                    // Display special characters as red boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#FFC7CE';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (['"', "'"].includes(token)) {
-                    // Display quotes as green boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#C6F4D6';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (['!', '?', ';', ':'].includes(token)) {
-                    // Display special characters as red boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#FFC7CE';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (['"', "'"].includes(token)) {
-                    // Display quotes as green boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#C6F4D6';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                } else if (token.charCodeAt(0) >= 32 && token.charCodeAt(0) <= 126) {
-                    // Display other characters as green boxes
-                    const tokenBox = document.createElement('div');
-                    tokenBox.className = 'token-box';
-                    tokenBox.style.backgroundColor = '#C6F4D6';
-                    tokenBox.innerHTML = token;
-                    tokenDisplayDiv.appendChild(tokenBox);
-                }
-            });
+        tokens.forEach(token => {
+            const span = document.createElement('div');
+            const isPunct = /^[^\w\s]$/.test(token);
+            
+            span.className = `token-box ${isPunct ? 'token-punct' : 'token-word'}`;
+            span.innerText = token;
 
-            // Add hover effects to show token relationships
-            const relatedConcepts = {
-                "dog": ["pet", "animal"],
-                "cat": ["pet", "animal"],
-                "horse": ["pet", "animal"]
-            };
+            // Add Tooltip for relationships
+            const cleanToken = token.toLowerCase();
+            if (relationships[cleanToken]) {
+                const tooltip = document.createElement('div');
+                tooltip.className = 'tooltip';
+                tooltip.innerText = `Related: ${relationships[cleanToken]}`;
+                span.appendChild(tooltip);
+            }
 
-            tokenDisplayDiv.innerHTML += `
-                <script>
-                    document.querySelectorAll('.token-box').forEach(tokenBox => {
-                        tokenBox.addEventListener('mouseover', () => {
-                            const relatedConcepts = ${JSON.stringify(relatedConcepts)};
-                            let relatedConceptHtml = '';
-                            for (const concept in relatedConcepts) {
-                                if (concept.toLowerCase().includes(tokenBox.innerHTML.toLowerCase())) {
-                                    relatedConceptHtml += `<span class="related-concept">${concept}</span>`;
-                                }
-                            }
-                            tokenBox.innerHTML += relatedConceptHtml;
-                        });
+            tokenDisplay.appendChild(span);
+        });
+    }
 
-                        tokenBox.addEventListener('mouseout', () => {
-                            const relatedConcepts = ${JSON.stringify(relatedConcepts)};
-                            let relatedConceptHtml = '';
-                            for (const concept in relatedConcepts) {
-                                if (concept.toLowerCase().includes(tokenBox.innerHTML.toLowerCase())) {
-                                    relatedConceptHtml += `<span class="related-concept">${concept}</span>`;
-                                }
-                            }
-                            tokenBox.innerHTML = `${tokenBox.innerHTML}${relatedConceptHtml}`;
-                        });
-                    });
-                </script>
-            `;
-        }
-
-        // Add event listener to the analyze button
-        analyzeBtn.addEventListener('click', analyzeText);
-
-        // Initial text input and display
-        inputText.value = '';
-        document.getElementById('token-explaination').innerHTML = `
-            <p id="token-explaination">What are tokens?</p>
-            <p id="token-definition">Tokens are the basic building blocks of text. They can be words, punctuation marks, or spaces.</p>
-            <h2>Estimated Tokens:</h2>
-        `;
-
-        document.getElementById('estimated-token-count').innerHTML = '';
-    </script>
+    analyzeBtn.addEventListener('click', analyzeText);
+    
+    // Allow "Enter" key to trigger analysis
+    inputText.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') analyzeText();
+    });
+</script>
 
 </body>
 </html>
